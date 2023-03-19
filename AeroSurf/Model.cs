@@ -12,7 +12,6 @@ namespace AeroSurf
         public Model()
         {
             Browser = new ChromiumWebBrowser();
-
             NavigateToHome();
         }
         public void Dispose()
