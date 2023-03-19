@@ -33,6 +33,11 @@ namespace AeroSurf
         {
             Browser.Reload();
         }
+        public void Stop()
+        {
+            if (Browser != null)
+                Browser.Stop();
+        }
         public void NavigateToHome()
         {
             Browser.Load("https://www.google.com");

@@ -14,15 +14,17 @@
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
-            <Button Grid.Column="0" Content="&lt;" Command="{Binding PreviousCommand}"/>
-            <Button Grid.Column="1" Content="&gt;" Command="{Binding NextCommand}"/>
-            <Button Grid.Column="2" Content="Refresh" Command="{Binding RefreshCommand}"/>
-            <Button Grid.Column="3" Content="Home" Command="{Binding HomeCommand}"/>
+            <Button Grid.Column="0" Content="&lt;" Command="{Binding PreviousCommand}" Width="25"/>
+            <Button Grid.Column="1" Content="&gt;" Command="{Binding NextCommand}" Width="25"/>
+            <Button Grid.Column="2" Content="Refresh" Command="{Binding RefreshCommand}" Width="45"/>
+            <Button Grid.Column="3" Content="Stop" Command="{Binding StopCommand}" Width="45"/>
+            <Button Grid.Column="4" Content="Home" Command="{Binding HomeCommand}" Width="45"/>
 
-            <TextBox x:Name="SearchText" Grid.Column="4" Width="500" Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+            <TextBox x:Name="SearchText" Grid.Column="5" Width="500" Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
                 <TextBox.InputBindings>
                     <KeyBinding Key="Enter" Command="{Binding SearchCommand}"/>
                 </TextBox.InputBindings>

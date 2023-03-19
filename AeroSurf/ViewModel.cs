@@ -45,6 +45,10 @@ namespace AeroSurf
         {
             get { return new RelayCommand(() => model.Refresh()); }
         }
+        public ICommand StopCommand
+        {
+            get { return new RelayCommand(() => model.Stop()); }
+        }
         public ICommand HomeCommand
         {
             get { return new RelayCommand(() => model.NavigateToHome()); }
