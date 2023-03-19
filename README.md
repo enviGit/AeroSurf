@@ -17,7 +17,7 @@ AeroSurf is a web browser built using CefSharp, a lightweight .NET binding for t
 
 #### Installation
 1. Clone the repository or download the latest release.
-2. Run the executable file AeroSurf.exe.
+2. Run the executable file `AeroSurf.exe`.
 
 ## Usage
 #### Navigation
@@ -28,11 +28,11 @@ AeroSurf is a web browser built using CefSharp, a lightweight .NET binding for t
 - To reload a page, click on the reload button or use the keyboard shortcut `F5`.
 - To stop loading a page, click on the stop button or use the keyboard shortcut `Esc`.
 #### Settings
-- To enable or disable hardware acceleration, go to Settings > Advanced > System and toggle the switch.
-- To enable or disable lazy loading, go to Settings > Advanced > Page and toggle the switch.
+- To enable or disable hardware acceleration, go to `Settings > Advanced > System` and toggle the switch.
+- To enable or disable lazy loading, go to `Settings > Advanced > Page` and toggle the switch.
 
 ## Contributing
 I welcome contributions to AeroSurf. To contribute, please fork the repository and submit a pull request with your changes.
 
 ## License
-AeroSurf is licensed under the MIT License. See the [LICENSE](LICENSE.md) file for details.
+AeroSurf is licensed under the [MIT License](https://choosealicense.com/licenses/mit/). See the [LICENSE](LICENSE.md) file for details.
