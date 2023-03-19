@@ -8,11 +8,20 @@ using System.Windows;
 
 namespace AeroSurf
 {
-    public partial class MainWindow : Window
+    public class Controller
     {
-        private ChromiumWebBrowser browser;
+        private readonly Model model;
+        private readonly View view;
 
-        public MainWindow()
+        public Controller(Model model, View view)
+        {
+            this.model = model;
+            this.view = view;
+            this.view.Initialize += Initialize;
+            this.view.Closing += Closing;
+        }
+
+        private void Initialize(object sender, RoutedEventArgs e)
         {
             // Check if Cef has been initialized already
             if (!Cef.IsInitialized)
@@ -26,29 +35,41 @@ namespace AeroSurf
                 settings.CefCommandLineArgs.Add("enable-begin-frame-scheduling", "1");
                 settings.CefCommandLineArgs.Add("use-gl", "swiftshader");
                 settings.CefCommandLineArgs.Add("use-angle", "gl");
+                // Enable gzip compression
+                settings.CefCommandLineArgs.Add("disable-features", "NetworkService");
+                settings.CefCommandLineArgs.Add("enable-features", "NetworkServiceInProcess");
+                settings.CefCommandLineArgs.Add("enable-gzip", "1");
                 // Initialize CefSharp with custom settings
                 Cef.Initialize(settings);
             }
 
-            InitializeComponent();
+            // Initialize the model
+            model.Initialize("https://www.google.com");
 
-            // Initialize ChromiumWebBrowser instance
-            browser = new ChromiumWebBrowser("https://www.google.com");
-
-            // Add the control to the form
-            Content = browser;
+            // Set the content of the view to the browser control
+            view.Content = model.Browser;
 
             // Attach event handlers to implement lazy loading
-            browser.FrameLoadEnd += OnFrameLoadEnd;
-            browser.LoadingStateChanged += OnLoadingStateChanged;
+            model.Browser.FrameLoadEnd += OnFrameLoadEnd;
+            model.Browser.LoadingStateChanged += OnLoadingStateChanged;
         }
+
+        private void Closing(object sender, CancelEventArgs e)
+        {
+            // Dispose of ChromiumWebBrowser instance
+            model.Browser.Dispose();
+
+            // Shut down CefSharp
+            Cef.Shutdown();
+        }
+
         private async void OnFrameLoadEnd(object sender, FrameLoadEndEventArgs e)
         {
             // Wait for the document to finish loading
             await Task.Delay(1000);
 
             // Inject JavaScript to implement lazy loading
-            await browser.EvaluateScriptAsync(@"
+            await model.Browser.EvaluateScriptAsync(@"
                 window.addEventListener('scroll', function() 
                 {
                     var images = document.querySelectorAll('img[data-src]');
@@ -67,32 +88,30 @@ namespace AeroSurf
                 });
             ");
         }
+
         private void OnLoadingStateChanged(object sender, LoadingStateChangedEventArgs e)
         {
             // Hide images until they are loaded
             if (!e.IsLoading)
             {
-                browser.ExecuteScriptAsync(@"
+                model.Browser.ExecuteScriptAsync(@"
                     var images = document.querySelectorAll('img[src]:not([src=""])');
-                    for (var i = 0; i < images.length; i++) {
+
+                    for (var i = 0; i < images.length; i++) 
+                    {
                         var image = images[i];
-                        if (!image.complete) {
+
+                        if (!image.complete) 
+                        {
                             image.style.visibility = 'hidden';
-                            image.addEventListener('load', function() {
+                            image.addEventListener('load', function() 
+                            {
                                 image.style.visibility = 'visible';
                             });
                         }
                     }
                 ");
             }
-        }
-        private void Window_Closing(object sender, CancelEventArgs e)
-        {
-            // Dispose of ChromiumWebBrowser instance
-            browser.Dispose();
-
-            // Shut down CefSharp
-            Cef.Shutdown();
         }
     }
 }
