@@ -9,8 +9,10 @@ namespace AeroSurf
         public View()
         {
             InitializeComponent();
+            var viewModel = new ViewModel();
             controller = new Controller(new Model(), this);
             Loaded += OnLoaded; // Attach event handler
+            DataContext = viewModel;
         }
         private void OnLoaded(object sender, RoutedEventArgs e)
         {
