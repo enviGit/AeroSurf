@@ -53,7 +53,6 @@ namespace AeroSurf
             model.Browser.FrameLoadEnd += OnFrameLoadEnd;
             model.Browser.LoadingStateChanged += OnLoadingStateChanged;
         }
-
         private void Closing(object sender, CancelEventArgs e)
         {
             // Dispose of ChromiumWebBrowser instance
@@ -62,11 +61,54 @@ namespace AeroSurf
             // Shut down CefSharp
             Cef.Shutdown();
         }
+        private async Task RemoveUnnecessaryElements()
+        {
+            // Remove all elements with the class "advertisement"
+            await model.Browser.EvaluateScriptAsync(@"
+                var ads = document.getElementsByClassName('advertisement');
+
+                for(var i = 0; i < ads.length; i++) 
+                {
+                    ads[i].remove();
+                }
+            ");
+            // Remove all elements with the class "ad"
+            await model.Browser.EvaluateScriptAsync(@"
+                var ads = document.getElementsByClassName('ad');
+
+                for(var i = 0; i < ads.length; i++) 
+                {
+                    ads[i].remove();
+                }
+            ");
+            // Remove all elements with the class "advert"
+            await model.Browser.EvaluateScriptAsync(@"
+                var ads = document.getElementsByClassName('advert');
+
+                for(var i = 0; i < ads.length; i++) 
+                {
+                    ads[i].remove();
+                }
+            ");
+            // Remove all elements with the class "social-media"
+            await model.Browser.EvaluateScriptAsync(@"
+                var socialMedia = document.getElementsByClassName('social-media');
+
+                for(var i = 0; i < socialMedia.length; i++)
+                {
+                    socialMedia[i].remove();
+                }
+            ");
+            // Add more code to remove other unnecessary elements
+        }
 
         private async void OnFrameLoadEnd(object sender, FrameLoadEndEventArgs e)
         {
             // Wait for the document to finish loading
             await Task.Delay(1000);
+
+            // Remove unnecessary elements
+            await RemoveUnnecessaryElements();
 
             // Inject JavaScript to implement lazy loading
             await model.Browser.EvaluateScriptAsync(@"
@@ -113,5 +155,6 @@ namespace AeroSurf
                 ");
             }
         }
+
     }
 }
