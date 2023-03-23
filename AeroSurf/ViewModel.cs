@@ -3,6 +3,7 @@ using CefSharp.Wpf;
 using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Input;
 
 namespace AeroSurf
@@ -19,6 +20,7 @@ namespace AeroSurf
             // Attach event handlers to implement lazy loading
             model.Browser.FrameLoadEnd += OnFrameLoadEnd;
             model.Browser.LoadingStateChanged += OnLoadingStateChanged;
+            model.Browser.AddressChanged += OnAddressChanged;
         }
         public ChromiumWebBrowser Browser
         {
@@ -158,18 +160,15 @@ namespace AeroSurf
                 this.execute = execute;
                 this.canExecute = canExecute;
             }
-
             public event EventHandler CanExecuteChanged
             {
                 add { CommandManager.RequerySuggested += value; }
                 remove { CommandManager.RequerySuggested -= value; }
             }
-
             public bool CanExecute(object parameter)
             {
                 return canExecute == null || canExecute();
             }
-
             public void Execute(object parameter)
             {
                 execute();
@@ -178,6 +177,10 @@ namespace AeroSurf
         protected virtual void OnPropertyChanged(string propertyName)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+        private void OnAddressChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            SearchText = e.NewValue.ToString();
         }
     }
 }

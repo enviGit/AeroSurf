@@ -2,6 +2,10 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="AeroSurf - A Lightweight and Fast Web Browser" Height="1080" Width="1920" WindowState="Maximized">
+    <Window.InputBindings>
+        <KeyBinding Key="F5" Command="{Binding RefreshCommand}" />
+        <KeyBinding Key="Escape" Command="{Binding StopCommand}" />
+    </Window.InputBindings>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="25"/>
@@ -24,7 +28,7 @@
             <Button Grid.Column="3" Content="Stop" Command="{Binding StopCommand}" Width="45"/>
             <Button Grid.Column="4" Content="Home" Command="{Binding HomeCommand}" Width="45"/>
 
-            <TextBox x:Name="SearchText" Grid.Column="5" Width="500" Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}">
+            <TextBox x:Name="SearchText" Grid.Column="5" Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="45,0">
                 <TextBox.InputBindings>
                     <KeyBinding Key="Enter" Command="{Binding SearchCommand}"/>
                 </TextBox.InputBindings>
