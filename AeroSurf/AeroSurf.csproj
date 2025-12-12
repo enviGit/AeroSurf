@@ -1,8 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\packages\CefSharp.Common.111.2.20\build\CefSharp.Common.props" Condition="Exists('..\packages\CefSharp.Common.111.2.20\build\CefSharp.Common.props')" />
-  <Import Project="..\packages\cef.redist.x86.111.2.2\build\cef.redist.x86.props" Condition="Exists('..\packages\cef.redist.x86.111.2.2\build\cef.redist.x86.props')" />
-  <Import Project="..\packages\cef.redist.x64.111.2.2\build\cef.redist.x64.props" Condition="Exists('..\packages\cef.redist.x64.111.2.2\build\cef.redist.x64.props')" />
+  <Import Project="..\packages\CefSharp.Common.143.0.90\build\CefSharp.Common.props" Condition="Exists('..\packages\CefSharp.Common.143.0.90\build\CefSharp.Common.props')" />
+  <Import Project="..\packages\chromiumembeddedframework.runtime.win-x86.143.0.9\build\chromiumembeddedframework.runtime.win-x86.props" Condition="Exists('..\packages\chromiumembeddedframework.runtime.win-x86.143.0.9\build\chromiumembeddedframework.runtime.win-x86.props')" />
+  <Import Project="..\packages\chromiumembeddedframework.runtime.win-x64.143.0.9\build\chromiumembeddedframework.runtime.win-x64.props" Condition="Exists('..\packages\chromiumembeddedframework.runtime.win-x64.143.0.9\build\chromiumembeddedframework.runtime.win-x64.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -44,14 +44,14 @@
     <StartupObject>AeroSurf.App</StartupObject>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="CefSharp, Version=111.2.20.0, Culture=neutral, PublicKeyToken=40c4b6fc221f4138, processorArchitecture=MSIL">
-      <HintPath>..\packages\CefSharp.Common.111.2.20\lib\net452\CefSharp.dll</HintPath>
+    <Reference Include="CefSharp, Version=143.0.90.0, Culture=neutral, PublicKeyToken=40c4b6fc221f4138, processorArchitecture=MSIL">
+      <HintPath>..\packages\CefSharp.Common.143.0.90\lib\net462\CefSharp.dll</HintPath>
     </Reference>
-    <Reference Include="CefSharp.Core, Version=111.2.20.0, Culture=neutral, PublicKeyToken=40c4b6fc221f4138, processorArchitecture=MSIL">
-      <HintPath>..\packages\CefSharp.Common.111.2.20\lib\net452\CefSharp.Core.dll</HintPath>
+    <Reference Include="CefSharp.Core, Version=143.0.90.0, Culture=neutral, PublicKeyToken=40c4b6fc221f4138, processorArchitecture=MSIL">
+      <HintPath>..\packages\CefSharp.Common.143.0.90\lib\net462\CefSharp.Core.dll</HintPath>
     </Reference>
-    <Reference Include="CefSharp.Wpf, Version=111.2.20.0, Culture=neutral, PublicKeyToken=40c4b6fc221f4138, processorArchitecture=MSIL">
-      <HintPath>..\packages\CefSharp.Wpf.111.2.20\lib\net462\CefSharp.Wpf.dll</HintPath>
+    <Reference Include="CefSharp.Wpf, Version=143.0.90.0, Culture=neutral, PublicKeyToken=40c4b6fc221f4138, processorArchitecture=MSIL">
+      <HintPath>..\packages\CefSharp.Wpf.143.0.90\lib\net462\CefSharp.Wpf.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
@@ -73,16 +73,16 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="View.xaml.cs">
-      <DependentUpon>View.xaml</DependentUpon>
+    <Compile Include="Handlers.cs" />
+    <Compile Include="MainWindow.xaml.cs">
+      <DependentUpon>MainWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Controller.cs" />
     <Compile Include="ViewModel.cs" />
-    <Page Include="View.xaml">
+    <Page Include="MainWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -115,15 +115,18 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="icon.ico" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\packages\cef.redist.x64.111.2.2\build\cef.redist.x64.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\cef.redist.x64.111.2.2\build\cef.redist.x64.props'))" />
-    <Error Condition="!Exists('..\packages\cef.redist.x86.111.2.2\build\cef.redist.x86.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\cef.redist.x86.111.2.2\build\cef.redist.x86.props'))" />
-    <Error Condition="!Exists('..\packages\CefSharp.Common.111.2.20\build\CefSharp.Common.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\CefSharp.Common.111.2.20\build\CefSharp.Common.props'))" />
-    <Error Condition="!Exists('..\packages\CefSharp.Common.111.2.20\build\CefSharp.Common.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\CefSharp.Common.111.2.20\build\CefSharp.Common.targets'))" />
+    <Error Condition="!Exists('..\packages\chromiumembeddedframework.runtime.win-x64.143.0.9\build\chromiumembeddedframework.runtime.win-x64.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\chromiumembeddedframework.runtime.win-x64.143.0.9\build\chromiumembeddedframework.runtime.win-x64.props'))" />
+    <Error Condition="!Exists('..\packages\chromiumembeddedframework.runtime.win-x86.143.0.9\build\chromiumembeddedframework.runtime.win-x86.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\chromiumembeddedframework.runtime.win-x86.143.0.9\build\chromiumembeddedframework.runtime.win-x86.props'))" />
+    <Error Condition="!Exists('..\packages\CefSharp.Common.143.0.90\build\CefSharp.Common.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\CefSharp.Common.143.0.90\build\CefSharp.Common.props'))" />
+    <Error Condition="!Exists('..\packages\CefSharp.Common.143.0.90\build\CefSharp.Common.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\CefSharp.Common.143.0.90\build\CefSharp.Common.targets'))" />
   </Target>
-  <Import Project="..\packages\CefSharp.Common.111.2.20\build\CefSharp.Common.targets" Condition="Exists('..\packages\CefSharp.Common.111.2.20\build\CefSharp.Common.targets')" />
+  <Import Project="..\packages\CefSharp.Common.143.0.90\build\CefSharp.Common.targets" Condition="Exists('..\packages\CefSharp.Common.143.0.90\build\CefSharp.Common.targets')" />
 </Project>

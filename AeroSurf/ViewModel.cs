@@ -1,186 +1,80 @@
 ﻿using CefSharp;
 using CefSharp.Wpf;
-using System;
 using System.ComponentModel;
-using System.Threading.Tasks;
-using System.Windows;
 using System.Windows.Input;
 
 namespace AeroSurf
 {
-    public class ViewModel : INotifyPropertyChanged
+    public class MainViewModel : INotifyPropertyChanged
     {
-        private Model model;
         public event PropertyChangedEventHandler PropertyChanged;
+        private string _address;
+        private string _title;
 
-        public ViewModel()
+        public MainViewModel()
         {
-            this.model = new Model();
+            Address = "https://www.google.com";
+        }
 
-            // Attach event handlers to implement lazy loading
-            model.Browser.FrameLoadEnd += OnFrameLoadEnd;
-            model.Browser.LoadingStateChanged += OnLoadingStateChanged;
-            model.Browser.AddressChanged += OnAddressChanged;
-        }
-        public ChromiumWebBrowser Browser
+        public string Address
         {
-            get { return model.Browser; }
-        }
-        public string SearchText
-        {
-            get { return model.SearchText; }
+            get { return _address; }
             set
             {
-                model.SearchText = value;
-                OnPropertyChanged(nameof(SearchText));
+                _address = value;
+                OnPropertyChanged(nameof(Address));
             }
         }
-        public ICommand PreviousCommand
+
+        public string Title
         {
-            get { return new RelayCommand(() => model.GoBack(), () => model.Browser != null && model.Browser.CanGoBack); }
-        }
-        public ICommand NextCommand
-        {
-            get { return new RelayCommand(() => model.GoForward(), () => model.Browser != null && model.Browser.CanGoForward); }
-        }
-        public ICommand RefreshCommand
-        {
-            get { return new RelayCommand(() => model.Refresh()); }
-        }
-        public ICommand StopCommand
-        {
-            get { return new RelayCommand(() => model.Stop()); }
-        }
-        public ICommand HomeCommand
-        {
-            get { return new RelayCommand(() => model.NavigateToHome()); }
-        }
-        public ICommand SearchCommand
-        {
-            get { return new RelayCommand(() => model.Search(SearchText)); }
+            get { return _title; }
+            set { _title = value; OnPropertyChanged(nameof(Title)); }
         }
 
-        private async Task RemoveUnnecessaryElements()
+        public ICommand GoBackCommand => new RelayCommand<ChromiumWebBrowser>(b => b.Back(), b => b != null && b.CanGoBack);
+        public ICommand GoForwardCommand => new RelayCommand<ChromiumWebBrowser>(b => b.Forward(), b => b != null && b.CanGoForward);
+        public ICommand ReloadCommand => new RelayCommand<ChromiumWebBrowser>(b => b.Reload());
+
+        public ICommand SearchCommand => new RelayCommand<ChromiumWebBrowser>(browser =>
         {
-            // Remove all elements with the class "advertisement"
-            await model.Browser.EvaluateScriptAsync(@"
-                var ads = document.getElementsByClassName('advertisement');
+            if (string.IsNullOrWhiteSpace(Address)) return;
 
-                for(var i = 0; i < ads.length; i++) 
-                {
-                    ads[i].remove();
-                }
-            ");
-            // Remove all elements with the class "ad"
-            await model.Browser.EvaluateScriptAsync(@"
-                var ads = document.getElementsByClassName('ad');
-
-                for(var i = 0; i < ads.length; i++) 
-                {
-                    ads[i].remove();
-                }
-            ");
-            // Remove all elements with the class "advert"
-            await model.Browser.EvaluateScriptAsync(@"
-                var ads = document.getElementsByClassName('advert');
-
-                for(var i = 0; i < ads.length; i++) 
-                {
-                    ads[i].remove();
-                }
-            ");
-            // Remove all elements with the class "social-media"
-            await model.Browser.EvaluateScriptAsync(@"
-                var socialMedia = document.getElementsByClassName('social-media');
-
-                for(var i = 0; i < socialMedia.length; i++)
-                {
-                    socialMedia[i].remove();
-                }
-            ");
-            // Add more code to remove other unnecessary elements
-        }
-        private async void OnFrameLoadEnd(object sender, FrameLoadEndEventArgs e)
-        {
-            // Wait for the document to finish loading
-            await Task.Delay(1000);
-            // Remove unnecessary elements
-            await RemoveUnnecessaryElements();
-            // Inject JavaScript to implement lazy loading
-            await model.Browser.EvaluateScriptAsync(@"
-                window.addEventListener('scroll', function() 
-                {
-                    var images = document.querySelectorAll('img[data-src]');
-
-                    for (var i = 0; i < images.length; i++) 
-                    {
-                        var image = images[i];
-                        var rect = image.getBoundingClientRect();
-
-                        if (rect.top >= 0 && rect.bottom <= window.innerHeight) 
-                        {
-                            image.src = image.dataset.src;
-                            image.removeAttribute('data-src');
-                        }
-                    }
-                });
-            ");
-        }
-        private void OnLoadingStateChanged(object sender, LoadingStateChangedEventArgs e)
-        {
-            // Hide images until they are loaded
-            if (!e.IsLoading)
+            if (Address.Contains(".") && !Address.Contains(" "))
             {
-                model.Browser.ExecuteScriptAsync(@"
-                    var images = document.querySelectorAll('img[src]:not([src=""])');
+                var target = Address.StartsWith("http") ? Address : "https://" + Address;
+                browser.Load(target);
+            }
+            else
+            {
+                browser.Load($"https://www.google.com/search?q={Address}");
+            }
+        });
 
-                    for (var i = 0; i < images.length; i++) 
-                    {
-                        var image = images[i];
+        public void UpdateAddress(string newUrl)
+        {
+            _address = newUrl;
+            OnPropertyChanged(nameof(Address));
+        }
 
-                        if (!image.complete) 
-                        {
-                            image.style.visibility = 'hidden';
-                            image.addEventListener('load', function() 
-                            {
-                                image.style.visibility = 'visible';
-                            });
-                        }
-                    }
-                ");
-            }
-        }
-        private class RelayCommand : ICommand
-        {
-            private readonly Action execute;
-            private readonly Func<bool> canExecute;
+        private void OnPropertyChanged(string name) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+    }
 
-            public RelayCommand(Action execute, Func<bool> canExecute = null)
-            {
-                this.execute = execute;
-                this.canExecute = canExecute;
-            }
-            public event EventHandler CanExecuteChanged
-            {
-                add { CommandManager.RequerySuggested += value; }
-                remove { CommandManager.RequerySuggested -= value; }
-            }
-            public bool CanExecute(object parameter)
-            {
-                return canExecute == null || canExecute();
-            }
-            public void Execute(object parameter)
-            {
-                execute();
-            }
-        }
-        protected virtual void OnPropertyChanged(string propertyName)
+    public class RelayCommand<T> : ICommand
+    {
+        private readonly System.Action<T> _execute;
+        private readonly System.Predicate<T> _canExecute;
+        public RelayCommand(System.Action<T> execute, System.Predicate<T> canExecute = null)
         {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            _execute = execute;
+            _canExecute = canExecute;
         }
-        private void OnAddressChanged(object sender, DependencyPropertyChangedEventArgs e)
+        public bool CanExecute(object parameter) => _canExecute == null || _canExecute((T)parameter);
+        public void Execute(object parameter) => _execute((T)parameter);
+        public event System.EventHandler CanExecuteChanged
         {
-            SearchText = e.NewValue.ToString();
+            add { CommandManager.RequerySuggested += value; }
+            remove { CommandManager.RequerySuggested -= value; }
         }
     }
 }
