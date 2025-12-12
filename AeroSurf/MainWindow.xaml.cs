@@ -9,6 +9,7 @@ namespace AeroSurf
     public partial class MainWindow : Window
     {
         private MainViewModel _viewModel;
+        private bool _isUserSwitchingTab = false;
 
         public MainWindow()
         {
@@ -20,9 +21,13 @@ namespace AeroSurf
 
             Browser.AddressChanged += OnBrowserAddressChanged;
 
+            Browser.TitleChanged += OnBrowserTitleChanged;
+
             Browser.LoadingStateChanged += OnLoadingStateChanged;
 
-            Browser.Loaded += (s, e) => Browser.Load(_viewModel.Address);
+            Browser.Loaded += (s, e) => {
+                if (_viewModel.SelectedTab != null) Browser.Load(_viewModel.SelectedTab.Url);
+            };
         }
 
         private void OnLoadingStateChanged(object sender, LoadingStateChangedEventArgs e)
@@ -38,14 +43,57 @@ namespace AeroSurf
             }
         }
 
+        private void TabListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (_viewModel.SelectedTab != null)
+            {
+                _isUserSwitchingTab = true;
+
+                var url = _viewModel.SelectedTab.Url;
+
+                if (string.IsNullOrWhiteSpace(url) || !url.Contains("."))
+                {
+                    url = "https://www.google.com";
+                }
+
+                Browser.Load(url);
+
+                Task.Delay(200).ContinueWith(_ => _isUserSwitchingTab = false);
+            }
+        }
+
+        private void UrlTextBox_GotKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
+        {
+            (sender as TextBox).SelectAll();
+        }
+
+        private void UrlTextBox_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            TextBox tb = (sender as TextBox);
+            if (!tb.IsKeyboardFocused)
+            {
+                e.Handled = true;
+                tb.Focus();
+                tb.SelectAll();
+            }
+        }
+
         private void OnBrowserAddressChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
             Dispatcher.Invoke(() =>
             {
-                if (!UrlTextBox.IsKeyboardFocused)
+                if (!_isUserSwitchingTab)
                 {
-                    _viewModel.UpdateAddress(e.NewValue.ToString());
+                    _viewModel.UpdateAddressFromBrowser(e.NewValue.ToString());
                 }
+            });
+        }
+
+        private void OnBrowserTitleChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                _viewModel.UpdateTitleFromBrowser(e.NewValue.ToString());
             });
         }
 
