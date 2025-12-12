@@ -202,13 +202,12 @@
 
                 <Button.ContextMenu>
                     <ContextMenu>
-                        <MenuItem Header="Nowa Karta" Command="{Binding AddTabCommand}"/>
+                        <MenuItem Header="Bookmarks" IsEnabled="False"/>
+                        <MenuItem Header="History" IsEnabled="False"/>
+                        <MenuItem Header="Downloads" IsEnabled="False"/>
+                        <MenuItem Header="Settings" IsEnabled="False"/>
                         <Separator/>
-                        <MenuItem Header="Historia" />
-                        <MenuItem Header="Pobrane" />
-                        <MenuItem Header="Ustawienia" />
-                        <Separator/>
-                        <MenuItem Header="Zamknij" Click="Close_Click"/>
+                        <MenuItem Header="Close" Click="Close_Click"/>
                     </ContextMenu>
                 </Button.ContextMenu>
             </Button>
@@ -290,7 +289,7 @@
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
 
-                    <Button Command="{Binding AddTabCommand}" Margin="10" Height="35" Background="#007ACC" BorderThickness="0" Content="+ NOWA KARTA" Foreground="White" FontWeight="Bold" Cursor="Hand">
+                    <Button Command="{Binding AddTabCommand}" Margin="10" Height="35" Background="#007ACC" BorderThickness="0" Content="+ NEW TAB" Foreground="White" FontWeight="Bold" Cursor="Hand">
                         <Button.Style>
                             <Style TargetType="Button">
                                 <Setter Property="Template">

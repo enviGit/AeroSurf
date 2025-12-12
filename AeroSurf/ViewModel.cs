@@ -65,14 +65,14 @@ namespace AeroSurf
             set { _title = value; OnPropertyChanged(nameof(Title)); }
         }
 
-        public ICommand AddTabCommand => new RelayCommand<object>(o => AddNewTab("https://www.google.com", "Nowa Karta"));
+        public ICommand AddTabCommand => new RelayCommand<object>(o => AddNewTab("https://www.google.com", "New Tab"));
 
         public ICommand RemoveTabCommand => new RelayCommand<TabItemViewModel>(tab =>
         {
             if (Tabs.Contains(tab))
             {
                 Tabs.Remove(tab);
-                if (Tabs.Count == 0) AddNewTab("https://www.google.com", "Nowa Karta");
+                if (Tabs.Count == 0) AddNewTab("https://www.google.com", "New Tab");
 
                 if (SelectedTab == null || !Tabs.Contains(SelectedTab))
                 {
