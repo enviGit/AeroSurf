@@ -1,5 +1,5 @@
 ﻿using CefSharp;
-using System.Threading.Tasks;
+using CefSharp.Wpf;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -9,63 +9,64 @@ namespace AeroSurf
     public partial class MainWindow : Window
     {
         private MainViewModel _viewModel;
-        private bool _isUserSwitchingTab = false;
 
         public MainWindow()
         {
             InitializeComponent();
             _viewModel = new MainViewModel();
             DataContext = _viewModel;
-
-            Browser.RequestHandler = new CustomRequestHandler();
-
-            Browser.AddressChanged += OnBrowserAddressChanged;
-
-            Browser.TitleChanged += OnBrowserTitleChanged;
-
-            Browser.LoadingStateChanged += OnLoadingStateChanged;
-
-            Browser.Loaded += (s, e) => {
-                if (_viewModel.SelectedTab != null) Browser.Load(_viewModel.SelectedTab.Url);
-            };
         }
 
-        private void OnLoadingStateChanged(object sender, LoadingStateChangedEventArgs e)
+        private void Browser_Loaded(object sender, RoutedEventArgs e)
         {
-            if (!e.IsLoading)
-            {
-                Dispatcher.Invoke(async () =>
-                {
-                    await Task.Delay(100);
+            var browser = sender as ChromiumWebBrowser;
+            if (browser == null) return;
 
-                    CommandManager.InvalidateRequerySuggested();
-                });
+            browser.RequestHandler = new CustomRequestHandler();
+
+            var tabViewModel = browser.DataContext as TabItemViewModel;
+            if (tabViewModel != null)
+            {
+                tabViewModel.BrowserInstance = browser;
             }
         }
 
-        private void TabListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void Browser_AddressChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
-            if (_viewModel.SelectedTab != null)
+            var browser = sender as ChromiumWebBrowser;
+            var tabViewModel = browser.DataContext as TabItemViewModel;
+
+            if (tabViewModel != null)
             {
-                _isUserSwitchingTab = true;
+                tabViewModel.Url = e.NewValue.ToString();
 
-                var url = _viewModel.SelectedTab.Url;
-
-                if (string.IsNullOrWhiteSpace(url) || !url.Contains("."))
+                if (tabViewModel.IsSelected)
                 {
-                    url = "https://www.google.com";
+                    Dispatcher.Invoke(() =>
+                    {
+                        if (!UrlTextBox.IsKeyboardFocused)
+                            _viewModel.Address = tabViewModel.Url;
+                    });
                 }
-
-                Browser.Load(url);
-
-                Task.Delay(200).ContinueWith(_ => _isUserSwitchingTab = false);
             }
         }
 
-        private void UrlTextBox_GotKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
+        private void Browser_TitleChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
-            (sender as TextBox).SelectAll();
+            var browser = sender as ChromiumWebBrowser;
+            var tabViewModel = browser.DataContext as TabItemViewModel;
+
+            if (tabViewModel != null)
+            {
+                tabViewModel.Title = e.NewValue.ToString();
+                if (tabViewModel.IsSelected)
+                {
+                    Dispatcher.Invoke(() => _viewModel.Title = "AeroSurf - " + tabViewModel.Title);
+                }
+            }
         }
+
+        private void UrlTextBox_GotKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e) => (sender as TextBox).SelectAll();
 
         private void UrlTextBox_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
@@ -78,42 +79,10 @@ namespace AeroSurf
             }
         }
 
-        private void OnBrowserAddressChanged(object sender, DependencyPropertyChangedEventArgs e)
-        {
-            Dispatcher.Invoke(() =>
-            {
-                if (!_isUserSwitchingTab)
-                {
-                    _viewModel.UpdateAddressFromBrowser(e.NewValue.ToString());
-                }
-            });
-        }
-
-        private void OnBrowserTitleChanged(object sender, DependencyPropertyChangedEventArgs e)
-        {
-            Dispatcher.Invoke(() =>
-            {
-                _viewModel.UpdateTitleFromBrowser(e.NewValue.ToString());
-            });
-        }
-
-        private void TitleBar_MouseDown(object sender, MouseButtonEventArgs e)
-        {
-            if (e.ChangedButton == MouseButton.Left) this.DragMove();
-        }
-
+        private void MenuBtn_Click(object sender, RoutedEventArgs e) => (sender as Button).ContextMenu.IsOpen = true;
+        private void TitleBar_MouseDown(object sender, MouseButtonEventArgs e) { if (e.ChangedButton == MouseButton.Left) this.DragMove(); }
         private void Close_Click(object sender, RoutedEventArgs e) => Close();
-
-        private void Maximize_Click(object sender, RoutedEventArgs e)
-        {
-            WindowState = WindowState == WindowState.Normal ? WindowState.Maximized : WindowState.Normal;
-        }
-
+        private void Maximize_Click(object sender, RoutedEventArgs e) => WindowState = WindowState == WindowState.Normal ? WindowState.Maximized : WindowState.Normal;
         private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = WindowState.Minimized;
-
-        private void MenuBtn_Click(object sender, RoutedEventArgs e)
-        {
-            (sender as Button).ContextMenu.IsOpen = true;
-        }
     }
 }

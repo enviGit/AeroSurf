@@ -255,7 +255,34 @@
             </Grid>
         </Border>
 
-        <cef:ChromiumWebBrowser x:Name="Browser" Grid.Row="2" Title="{Binding Title, Mode=OneWayToSource}"/>
+        <ItemsControl Grid.Row="2" ItemsSource="{Binding Tabs}">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <Grid />
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <cef:ChromiumWebBrowser Address="{Binding Url, Mode=OneWay}" 
+                                            Loaded="Browser_Loaded"
+                                            Title="{Binding Title, Mode=OneWayToSource}"
+                                            AddressChanged="Browser_AddressChanged"
+                                            TitleChanged="Browser_TitleChanged"/>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+
+            <ItemsControl.ItemContainerStyle>
+                <Style TargetType="ContentPresenter">
+                    <Setter Property="Visibility" Value="Collapsed"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                            <Setter Property="Visibility" Value="Visible"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </ItemsControl.ItemContainerStyle>
+        </ItemsControl>
 
         <Grid Grid.Row="1" Grid.RowSpan="2" Panel.ZIndex="99" HorizontalAlignment="Left" Width="280">
             <Grid.ColumnDefinitions>
@@ -313,7 +340,6 @@
                     <ListBox Grid.Row="1" 
          ItemsSource="{Binding Tabs}" 
          SelectedItem="{Binding SelectedTab}"
-         SelectionChanged="TabListBox_SelectionChanged" 
          ItemContainerStyle="{StaticResource TabItemContainerStyle}"
          Background="Transparent" 
          BorderThickness="0" 

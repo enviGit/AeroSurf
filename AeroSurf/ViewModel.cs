@@ -1,9 +1,6 @@
-﻿using CefSharp;
-using CefSharp.Wpf;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
-using System.Security.Policy;
 using System.Windows.Input;
 
 namespace AeroSurf
@@ -20,8 +17,7 @@ namespace AeroSurf
         public MainViewModel()
         {
             Tabs = new ObservableCollection<TabItemViewModel>();
-
-            AddNewTab("https://www.google.com", "Google");
+            AddNewTab("https://www.google.com", "New Tab");
         }
 
         public TabItemViewModel SelectedTab
@@ -32,18 +28,15 @@ namespace AeroSurf
                 if (_selectedTab != value)
                 {
                     if (_selectedTab != null) _selectedTab.IsSelected = false;
-
                     _selectedTab = value;
-
                     if (_selectedTab != null)
                     {
                         _selectedTab.IsSelected = true;
-                        _address = _selectedTab.Url;
-                        OnPropertyChanged(nameof(Address));
-
+                        Address = _selectedTab.Url;
                         Title = "AeroSurf - " + _selectedTab.Title;
                     }
                     OnPropertyChanged(nameof(SelectedTab));
+                    CommandManager.InvalidateRequerySuggested();
                 }
             }
         }
@@ -55,7 +48,6 @@ namespace AeroSurf
             {
                 _address = value;
                 OnPropertyChanged(nameof(Address));
-                if (SelectedTab != null) SelectedTab.Url = value;
             }
         }
 
@@ -65,13 +57,16 @@ namespace AeroSurf
             set { _title = value; OnPropertyChanged(nameof(Title)); }
         }
 
+
         public ICommand AddTabCommand => new RelayCommand<object>(o => AddNewTab("https://www.google.com", "New Tab"));
 
         public ICommand RemoveTabCommand => new RelayCommand<TabItemViewModel>(tab =>
         {
             if (Tabs.Contains(tab))
             {
+                tab.Dispose();
                 Tabs.Remove(tab);
+
                 if (Tabs.Count == 0) AddNewTab("https://www.google.com", "New Tab");
 
                 if (SelectedTab == null || !Tabs.Contains(SelectedTab))
@@ -80,18 +75,15 @@ namespace AeroSurf
                 }
             }
         });
-        public ICommand GoBackCommand => new RelayCommand<ChromiumWebBrowser>(b => b.Back(), b => b != null && b.CanGoBack);
-        public ICommand GoForwardCommand => new RelayCommand<ChromiumWebBrowser>(b => b.Forward(), b => b != null && b.CanGoForward);
-        public ICommand ReloadCommand => new RelayCommand<ChromiumWebBrowser>(b => b.Reload());
 
-        public ICommand SearchCommand => new RelayCommand<ChromiumWebBrowser>(browser =>
+        public ICommand SearchCommand => new RelayCommand<object>(o =>
         {
-            if (string.IsNullOrWhiteSpace(Address)) return;
-            string target = Address.Contains(".") && !Address.Contains(" ")
-                ? (Address.StartsWith("http") ? Address : "https://" + Address)
-                : $"https://www.google.com/search?q={Address}";
-            browser.Load(target);
+            SelectedTab?.LoadUrlCommand.Execute(Address);
         });
+
+        public ICommand GoBackCommand => new RelayCommand<object>(o => SelectedTab?.GoBackCommand.Execute(null), o => SelectedTab != null && SelectedTab.GoBackCommand.CanExecute(null));
+        public ICommand GoForwardCommand => new RelayCommand<object>(o => SelectedTab?.GoForwardCommand.Execute(null), o => SelectedTab != null && SelectedTab.GoForwardCommand.CanExecute(null));
+        public ICommand ReloadCommand => new RelayCommand<object>(o => SelectedTab?.ReloadCommand.Execute(null));
 
         public void AddNewTab(string url, string title)
         {
@@ -101,23 +93,24 @@ namespace AeroSurf
             SelectedTab = newTab;
         }
 
-        public void UpdateAddressFromBrowser(string newUrl)
+        public void UpdateInfoFromTab(string url, string title)
         {
-            _address = newUrl;
-            OnPropertyChanged(nameof(Address));
-            if (SelectedTab != null) SelectedTab.Url = newUrl;
-        }
-
-        public void UpdateTitleFromBrowser(string newTitle)
-        {
-            Title = "AeroSurf - " + newTitle;
-            if (SelectedTab != null) SelectedTab.Title = newTitle;
+            if (SelectedTab != null && SelectedTab.Url == url)
+            {
+                _address = url;
+                OnPropertyChanged(nameof(Address));
+            }
+            if (SelectedTab != null && SelectedTab.Title == title)
+            {
+                Title = "AeroSurf - " + title;
+            }
         }
 
         private void OnPropertyChanged(string name) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
     }
+}
 
-    public class RelayCommand<T> : ICommand
+public class RelayCommand<T> : ICommand
     {
         private readonly System.Action<T> _execute;
         private readonly System.Predicate<T> _canExecute;
@@ -134,4 +127,3 @@ namespace AeroSurf
             remove { CommandManager.RequerySuggested -= value; }
         }
     }
-}
