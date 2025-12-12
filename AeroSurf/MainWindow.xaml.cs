@@ -1,6 +1,7 @@
 ﻿using CefSharp;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 
 namespace AeroSurf
@@ -61,5 +62,10 @@ namespace AeroSurf
         }
 
         private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = WindowState.Minimized;
+
+        private void MenuBtn_Click(object sender, RoutedEventArgs e)
+        {
+            (sender as Button).ContextMenu.IsOpen = true;
+        }
     }
 }

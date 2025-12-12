@@ -1,6 +1,9 @@
 ﻿using CefSharp;
 using CefSharp.Wpf;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Linq;
+using System.Security.Policy;
 using System.Windows.Input;
 
 namespace AeroSurf
@@ -8,30 +11,73 @@ namespace AeroSurf
     public class MainViewModel : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged;
+        public ObservableCollection<TabItemViewModel> Tabs { get; set; }
+
+        private TabItemViewModel _selectedTab;
         private string _address;
         private string _title;
 
         public MainViewModel()
         {
-            Address = "https://www.google.com";
+            Tabs = new ObservableCollection<TabItemViewModel>();
+
+            AddNewTab("https://www.google.com", "Google");
+        }
+
+        public TabItemViewModel SelectedTab
+        {
+            get => _selectedTab;
+            set
+            {
+                if (_selectedTab != value)
+                {
+                    if (_selectedTab != null) _selectedTab.IsSelected = false;
+                    _selectedTab = value;
+                    if (_selectedTab != null)
+                    {
+                        _selectedTab.IsSelected = true;
+                        Address = _selectedTab.Url;
+                    }
+                    OnPropertyChanged(nameof(SelectedTab));
+                }
+            }
         }
 
         public string Address
         {
-            get { return _address; }
+            get => _address;
             set
             {
                 _address = value;
                 OnPropertyChanged(nameof(Address));
+                if (SelectedTab != null) SelectedTab.Url = value;
             }
         }
 
         public string Title
         {
-            get { return _title; }
-            set { _title = value; OnPropertyChanged(nameof(Title)); }
+            get => _title;
+            set
+            {
+                _title = value;
+                OnPropertyChanged(nameof(Title));
+                if (SelectedTab != null) SelectedTab.Url = value;
+            }
         }
 
+        public ICommand AddTabCommand => new RelayCommand<object>(o => AddNewTab("https://www.google.com", "Nowa Karta"));
+
+        public ICommand RemoveTabCommand => new RelayCommand<TabItemViewModel>(tab =>
+        {
+            if (Tabs.Contains(tab))
+            {
+                Tabs.Remove(tab);
+                if (Tabs.Count > 0 && SelectedTab == null)
+                    SelectedTab = Tabs.Last();
+                else if (Tabs.Count == 0)
+                    AddNewTab("https://www.google.com", "Nowa Karta");
+            }
+        });
         public ICommand GoBackCommand => new RelayCommand<ChromiumWebBrowser>(b => b.Back(), b => b != null && b.CanGoBack);
         public ICommand GoForwardCommand => new RelayCommand<ChromiumWebBrowser>(b => b.Forward(), b => b != null && b.CanGoForward);
         public ICommand ReloadCommand => new RelayCommand<ChromiumWebBrowser>(b => b.Reload());
@@ -39,21 +85,22 @@ namespace AeroSurf
         public ICommand SearchCommand => new RelayCommand<ChromiumWebBrowser>(browser =>
         {
             if (string.IsNullOrWhiteSpace(Address)) return;
-
-            if (Address.Contains(".") && !Address.Contains(" "))
-            {
-                var target = Address.StartsWith("http") ? Address : "https://" + Address;
-                browser.Load(target);
-            }
-            else
-            {
-                browser.Load($"https://www.google.com/search?q={Address}");
-            }
+            string target = Address.Contains(".") ? (Address.StartsWith("http") ? Address : "https://" + Address) : $"https://www.google.com/search?q={Address}";
+            browser.Load(target);
         });
 
-        public void UpdateAddress(string newUrl)
+        private void AddNewTab(string url, string title)
         {
-            _address = newUrl;
+            var newTab = new TabItemViewModel { Url = url, Title = title };
+            newTab.CloseCommand = RemoveTabCommand;
+            Tabs.Add(newTab);
+            SelectedTab = newTab;
+        }
+
+        public void UpdateAddress(string url)
+        {
+            _address = url;
+            if (SelectedTab != null) SelectedTab.Url = url;
             OnPropertyChanged(nameof(Address));
         }
 
