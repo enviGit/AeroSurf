@@ -1,38 +1,37 @@
-# AeroSurf - A Lightweight and Fast Web Browser
+# 🌊 AeroSurf Browser
 
-AeroSurf is a web browser built using CefSharp, a lightweight .NET binding for the Chromium Embedded Framework (CEF). It provides a fast and responsive browsing experience while using minimal system resources.
+**AeroSurf** is a lightweight, high-performance web browser built with **C# (WPF)** and **CefSharp** (Chromium). It focuses on minimalism and speed.
 
-## Features
-- Tabbed browsing (not implemented yet)
-- Back and forward navigation
-- Reload and stop buttons
-- Address bar with auto-suggestion (not implemented yet)
-- Hardware acceleration support
-- Lazy loading of web page elements
+<img width="1918" height="1038" alt="AeroSurf Banner" src="https://github.com/user-attachments/assets/2b7fc716-f6bc-4342-8dfc-7996475fd948" />
 
-## Getting Started
-#### Prerequisites
-- Windows 7 or later
-- .NET Framework 4.6.2 or later
+## 🚀 Features (v0.9.0)
 
-#### Installation
-1. Clone the repository or download the latest release.
-2. Run the executable file `AeroSurf.exe`.
+* **⚡ Blazing Fast:** Powered by the Chromium Embedded Framework (CEF) with GPU acceleration enabled.
+* **🛡️ Native AdBlock:** Built-in network request filter that blocks ads before they even load (no heavy JavaScript injection).
+* **dark Mode UI:** A fully custom, borderless window design.
+* **🧘 Sidebar:** A slide-out sidebar overlay designed to maximize screen real estate for content.
+* **Privacy First:** No telemetry, minimal footprint.
 
-## Usage
-#### Navigation
-- To open a new tab, click on the "+" button on the right side of the tab bar (not implemented yet).
-- To switch between tabs, click on the desired tab (not implemented yet).
-- To navigate to a web page, type the URL or search terms in the address bar and press Enter.
-- To go back or forward, click on the corresponding buttons or use the keyboard shortcuts `Alt + Left Arrow` and `Alt + Right Arrow`.
-- To reload a page, click on the reload button or use the keyboard shortcut `F5`.
-- To stop loading a page, click on the stop button or use the keyboard shortcut `Esc`.
-#### Settings
-- To enable or disable hardware acceleration, go to `Settings > Advanced > System` and toggle the switch (not implemented yet, option is enabled by default).
-- To enable or disable lazy loading, go to `Settings > Advanced > Page` and toggle the switch (not implemented yet, option is enabled by default).
+## 🛠️ Tech Stack
 
-## Contributing
-I welcome contributions to AeroSurf. To contribute, please fork the repository and submit a pull request with your changes.
+* **Language:** C#
+* **Framework:** .NET Framework 4.8 (WPF)
+* **Engine:** CefSharp.Wpf (Chromium)
+* **Architecture:** MVVM (Model-View-ViewModel)
+* **Design:** Custom XAML Styles & Vector Graphics (SVG)
 
-## License
-AeroSurf is licensed under the [MIT License](https://choosealicense.com/licenses/mit/). See the [LICENSE](LICENSE.md) file for details.
+## 📦 Installation / Build
+
+1.  Clone the repository:
+    ```bash
+    git clone [https://github.com/enviGit/AeroSurf.git](https://github.com/enviGit/AeroSurf.git)
+    ```
+2.  Open `AeroSurf.sln` in **Visual Studio 2022**.
+3.  Restore NuGet packages (specifically `CefSharp.Wpf`).
+4.  Build and Run (Press F5).
+
+> **Note:** The browser creates a cache folder in `%LocalStorage%` to speed up startup times.
+
+## 📄 License
+
+Distributed under the MIT License. See `LICENSE` for more information.
