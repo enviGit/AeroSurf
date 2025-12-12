@@ -30,5 +30,10 @@ namespace AeroSurf
         {
             return new AdBlockRequestHandler();
         }
+        protected override bool OnCertificateError(IWebBrowser chromiumWebBrowser, IBrowser browser, CefErrorCode errorCode, string requestUrl, ISslInfo sslInfo, IRequestCallback callback)
+        {
+            callback.Dispose();
+            return false;
+        }
     }
 }

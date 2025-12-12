@@ -22,6 +22,7 @@ namespace AeroSurf
             settings.CefCommandLineArgs.Add("disable-gpu-vsync"); 
             settings.CefCommandLineArgs.Add("renderer-process-limit", "10");
             settings.CefCommandLineArgs.Add("autoplay-policy", "no-user-gesture-required");
+            settings.CefCommandLineArgs.Add("site-per-process");
 
             Cef.Initialize(settings, performDependencyCheck: true, browserProcessHandler: null);
         }
