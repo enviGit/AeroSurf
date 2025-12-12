@@ -1,4 +1,5 @@
-﻿using System.Collections.ObjectModel;
+﻿using CefSharp.DevTools.CSS;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Windows.Input;
@@ -11,6 +12,7 @@ namespace AeroSurf
         public ObservableCollection<TabItemViewModel> Tabs { get; set; }
 
         private TabItemViewModel _selectedTab;
+        private TabItemViewModel _mediaTab;
         private string _address;
         private string _title;
 
@@ -32,14 +34,30 @@ namespace AeroSurf
                     if (_selectedTab != null)
                     {
                         _selectedTab.IsSelected = true;
-                        Address = _selectedTab.Url;
-                        Title = "AeroSurf - " + _selectedTab.Title;
+                        _address = _selectedTab.Url;
+                        _title = "AeroSurf - " + _selectedTab.Title;
+                        OnPropertyChanged(nameof(Address));
+                        OnPropertyChanged(nameof(Title));
+                        CheckIfMediaTab(_selectedTab);
                     }
                     OnPropertyChanged(nameof(SelectedTab));
                     CommandManager.InvalidateRequerySuggested();
                 }
             }
         }
+
+        public TabItemViewModel MediaTab
+        {
+            get => _mediaTab;
+            set
+            {
+                _mediaTab = value;
+                OnPropertyChanged(nameof(MediaTab));
+                OnPropertyChanged(nameof(HasMedia));
+            }
+        }
+
+        public bool HasMedia => MediaTab != null;
 
         public string Address
         {
@@ -54,7 +72,16 @@ namespace AeroSurf
         public string Title
         {
             get => _title;
-            set { _title = value; OnPropertyChanged(nameof(Title)); }
+            set
+            {
+                _title = value;
+                OnPropertyChanged(nameof(Title));
+
+                if (SelectedTab != null)
+                {
+                    CheckIfMediaTab(SelectedTab);
+                }
+            }
         }
 
 
@@ -64,15 +91,12 @@ namespace AeroSurf
         {
             if (Tabs.Contains(tab))
             {
+                if (tab == MediaTab) MediaTab = null;
+
                 tab.Dispose();
                 Tabs.Remove(tab);
-
                 if (Tabs.Count == 0) AddNewTab("https://www.google.com", "New Tab");
-
-                if (SelectedTab == null || !Tabs.Contains(SelectedTab))
-                {
-                    SelectedTab = Tabs.LastOrDefault();
-                }
+                if (SelectedTab == null || !Tabs.Contains(SelectedTab)) SelectedTab = Tabs.LastOrDefault();
             }
         });
 
@@ -84,6 +108,9 @@ namespace AeroSurf
         public ICommand GoBackCommand => new RelayCommand<object>(o => SelectedTab?.GoBackCommand.Execute(null), o => SelectedTab != null && SelectedTab.GoBackCommand.CanExecute(null));
         public ICommand GoForwardCommand => new RelayCommand<object>(o => SelectedTab?.GoForwardCommand.Execute(null), o => SelectedTab != null && SelectedTab.GoForwardCommand.CanExecute(null));
         public ICommand ReloadCommand => new RelayCommand<object>(o => SelectedTab?.ReloadCommand.Execute(null));
+        public ICommand GlobalPlayPauseCommand => new RelayCommand<object>(o => MediaTab?.MediaPlayPauseCommand.Execute(null));
+        public ICommand GlobalNextCommand => new RelayCommand<object>(o => MediaTab?.MediaNextCommand.Execute(null));
+        public ICommand GlobalPrevCommand => new RelayCommand<object>(o => MediaTab?.MediaPrevCommand.Execute(null));
 
         public void AddNewTab(string url, string title)
         {
@@ -91,18 +118,53 @@ namespace AeroSurf
             newTab.CloseCommand = RemoveTabCommand;
             Tabs.Add(newTab);
             SelectedTab = newTab;
+            CheckIfMediaTab(newTab);
         }
 
-        public void UpdateInfoFromTab(string url, string title)
+        public void UpdateInfoFromBrowser(string url, string title)
         {
-            if (SelectedTab != null && SelectedTab.Url == url)
+            if (SelectedTab != null)
             {
-                _address = url;
-                OnPropertyChanged(nameof(Address));
+                if (!string.IsNullOrEmpty(url) && SelectedTab.Url != url)
+                {
+                    SelectedTab.Url = url;
+                    if (SelectedTab.IsSelected)
+                    {
+                        _address = url;
+                        OnPropertyChanged(nameof(Address));
+                    }
+                }
+
+                if (!string.IsNullOrEmpty(title))
+                {
+                    SelectedTab.Title = title;
+                    if (SelectedTab.IsSelected)
+                    {
+                        Title = "AeroSurf - " + title;
+                    }
+                }
+
+                CheckIfMediaTab(SelectedTab);
             }
-            if (SelectedTab != null && SelectedTab.Title == title)
+        }
+
+        private void CheckIfMediaTab(TabItemViewModel tab)
+        {
+            if (tab == null) return;
+
+            string t = (tab.Title ?? "").ToLower();
+            string u = (tab.Url ?? "").ToLower();
+
+            if (t.Contains("youtube") || u.Contains("youtube") ||
+                t.Contains("spotify") || u.Contains("spotify") ||
+                t.Contains("netflix") || u.Contains("netflix") ||
+                t.Contains("twitch") || u.Contains("twitch") ||
+                t.Contains("soundcloud"))
             {
-                Title = "AeroSurf - " + title;
+                if (MediaTab != tab)
+                {
+                    MediaTab = tab;
+                }
             }
         }
 

@@ -54,6 +54,54 @@ namespace AeroSurf
                 BrowserInstance.Load(target);
             }
         });
+
+        public ICommand MediaPlayPauseCommand => new RelayCommand<object>(async o =>
+        {
+            if (BrowserInstance != null)
+            {
+                await BrowserInstance.EvaluateScriptAsync(@"
+                    var media = document.querySelector('video, audio');
+                    if (media) {
+                        if (media.paused) media.play();
+                        else media.pause();
+                    }
+                ");
+            }
+        });
+
+        public ICommand MediaNextCommand => new RelayCommand<object>(async o =>
+        {
+            if (BrowserInstance != null)
+            {
+                await BrowserInstance.EvaluateScriptAsync(@"
+                    // Próba kliknięcia przycisku 'Next' (YouTube specyficzne)
+                    var ytNext = document.querySelector('.ytp-next-button');
+                    if (ytNext) {
+                        ytNext.click();
+                    } else {
+                        // Fallback: przewiń o 10 sekund
+                        var media = document.querySelector('video, audio');
+                        if (media) media.currentTime += 10; 
+                    }
+                ");
+            }
+        });
+        public ICommand MediaPrevCommand => new RelayCommand<object>(async o =>
+        {
+            if (BrowserInstance != null)
+            {
+                await BrowserInstance.EvaluateScriptAsync(@"
+                    var ytPrev = document.querySelector('.ytp-prev-button');
+                    if (ytPrev) {
+                        ytPrev.click();
+                    } else {
+                        var media = document.querySelector('video, audio');
+                        if (media) media.currentTime -= 10;
+                    }
+                ");
+            }
+        });
+
         public void Dispose()
         {
             if (BrowserInstance != null)

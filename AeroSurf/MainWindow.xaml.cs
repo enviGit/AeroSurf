@@ -35,17 +35,22 @@ namespace AeroSurf
         {
             var browser = sender as ChromiumWebBrowser;
             var tabViewModel = browser.DataContext as TabItemViewModel;
+            string newUrl = e.NewValue.ToString();
 
             if (tabViewModel != null)
             {
-                tabViewModel.Url = e.NewValue.ToString();
+                tabViewModel.Url = newUrl;
 
                 if (tabViewModel.IsSelected)
                 {
                     Dispatcher.Invoke(() =>
                     {
                         if (!UrlTextBox.IsKeyboardFocused)
-                            _viewModel.Address = tabViewModel.Url;
+                        {
+                            _viewModel.Address = newUrl;
+                        }
+
+                        _viewModel.UpdateInfoFromBrowser(newUrl, null);
                     });
                 }
             }
@@ -55,13 +60,18 @@ namespace AeroSurf
         {
             var browser = sender as ChromiumWebBrowser;
             var tabViewModel = browser.DataContext as TabItemViewModel;
+            string newTitle = e.NewValue.ToString();
 
             if (tabViewModel != null)
             {
-                tabViewModel.Title = e.NewValue.ToString();
+                tabViewModel.Title = newTitle;
                 if (tabViewModel.IsSelected)
                 {
-                    Dispatcher.Invoke(() => _viewModel.Title = "AeroSurf - " + tabViewModel.Title);
+                    Dispatcher.Invoke(() =>
+                    {
+                        _viewModel.Title = "AeroSurf - " + newTitle;
+                        _viewModel.UpdateInfoFromBrowser(null, newTitle);
+                    });
                 }
             }
         }
